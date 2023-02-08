@@ -11,9 +11,9 @@ export const makeIndices = (items) => items.reduce(
   {},
 );
 
-export const mockResponse = (getData) => () => new Promise((resolve) => {
+export const mockResponse = (getData) => (...args) => new Promise((resolve) => {
   setTimeout(
-    async () => {
+    async (...args) => {
       const data = await getData();
       resolve({ data });
     },
