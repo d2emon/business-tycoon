@@ -1,9 +1,17 @@
 import logo from './logo.svg';
 import './App.css';
+import BusinessBoard from './containers/BusinessBoard';
+import { Card, Container } from 'react-bootstrap';
 
 function App() {
   return (
     <div className="App">
+      <Container>
+        <Card>
+          <BusinessBoard />
+        </Card>
+      </Container>
+      { /*
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
@@ -18,6 +26,7 @@ function App() {
           Learn React
         </a>
       </header>
+      */ }
     </div>
   );
 }
