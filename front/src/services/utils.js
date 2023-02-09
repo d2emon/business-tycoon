@@ -13,8 +13,8 @@ export const makeIndices = (items) => items.reduce(
 
 export const mockRequest = (getData) => (...args) => new Promise((resolve) => {
   setTimeout(
-    async (...args) => {
-      const data = await getData();
+    async () => {
+      const data = await getData(...args);
       resolve({ data });
     },
     500,

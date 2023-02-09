@@ -7,4 +7,4 @@ const fieldAPI = {
   getFields: mockResponse(getFields),
 };
 
-export default fieldAPI
+export default fieldAPI;
