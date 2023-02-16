@@ -6,7 +6,7 @@ const startGame = (players) => {
   PLAYERS = players.map((player) => ({
     ...player,
     money: 60000,
-    position: 1,
+    position: '1',
   }));
   return [...PLAYERS];
 };

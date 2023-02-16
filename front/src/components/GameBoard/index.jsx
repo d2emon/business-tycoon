@@ -1,130 +1,98 @@
-import React from 'react';
-import { Card, Col, Container, Row } from 'react-bootstrap';
+/* eslint-disable react/jsx-props-no-spreading */
+import React, { useMemo } from 'react';
+import {
+  Col,
+  Container,
+  Row,
+} from 'react-bootstrap';
+import PropTypes from 'prop-types';
+import BankCard from './BankCard';
+import CasinoCard from './CasinoCard';
+import CompanyCard from './CompanyCard';
+import JailCard from './JailCard';
 
-function FieldCard(props) {
-  const {
-    subtitle,
-    title,
-    children,
-  } = props;
-
-  return (
-    <Card className="my-2">
-      <Card.Header>
-      <Card.Title>
-          { title }
-        </Card.Title>
-
-        { subtitle && <Card.Subtitle>
-          { subtitle }
-        </Card.Subtitle> }
-      </Card.Header>
-
-      <Card.Body>
-        {children}
-      </Card.Body>
-    </Card>
-  );
-}
-
-function CompanyCard(props) {
-  const {
-    cost,
-    icon,
-    title,
-  } = props;
-
-  const icons = {
-    car: 'Автомобили',
-    plane: 'Авиация',
-    hotel: 'Гостиницы',
-    music: 'Развлечения',
-    food: 'Питание',
-    smoking: 'Табак',
-    fashion: 'Мода',
-    gun: 'Оружие',
-    sail: 'Корабли',
-  }
-
-  return (
-    <FieldCard
-      title={title}
-      subtitle={cost}
-    >
-      {icons[icon] || `Неизвестно ${icon}`}
-    </FieldCard>
-  );
-}
-
-function BankCard(props) {
-  const {
-    payment,    
-    title,
-  } = props;
-
-  return (
-    <FieldCard
-      title={title}
-      subtitle={`+${payment}`}
-    >
-      Банк
-    </FieldCard>
-  );
-}
-
-function CasinoCard(props) {
-  const {
-    title,
-  } = props;
-
-  return (
-    <FieldCard
-      title={title}
-      subtitle="Ваша ставка"
-    >
-      Казино
-    </FieldCard>
-  );
-}
-
-function JailCard(props) {
-  const {
-    fine,
-    title,
-  } = props;
-
-  return (
-    <FieldCard
-      title={title}
-      subtitle={-fine}
-    >
-      Заключение
-    </FieldCard>
-  );
-}
+import './styles.css';
 
 function GameBoard(props) {
   const {
     fields,
+    players,
   } = props;
+
+  const cardMd = 3;
+
+  const fieldsData = useMemo(
+    () => fields.map((field) => ({
+      ...field,
+      players: players.filter((player) => (player.position === field.id)),
+    })),
+    [
+      fields,
+      players,
+    ],
+  );
 
   return (
     <Container>
       <Row>
-        { fields.map((field) => (
+        { fieldsData.map((field) => (
           <Col
             key={field.id}
-            md={2}
+            md={cardMd}
           >
-            { (field.fieldType === 1) && <CompanyCard {...field} /> }
-            { (field.fieldType === 2) && <BankCard {...field} /> }
-            { (field.fieldType === 3) && <CasinoCard {...field} /> }
-            { (field.fieldType === 4) && <JailCard {...field} /> }
+            {(field.fieldType === 1) && (
+              <CompanyCard
+                players={field.players}
+                title={field.title}
+                cost={field.cost}
+                icon={field.icon}
+              />
+            )}
+            {(field.fieldType === 2) && (
+              <BankCard
+                players={field.players}
+                title={field.title}
+                payment={field.payment}
+              />
+            )}
+            {(field.fieldType === 3) && (
+              <CasinoCard
+                players={field.players}
+                title={field.title}
+              />
+            )}
+            {(field.fieldType === 4) && (
+              <JailCard
+                players={field.players}
+                title={field.title}
+                fine={field.fine}
+              />
+            )}
           </Col>
         )) }
       </Row>
     </Container>
   );
 }
+
+GameBoard.defaultProps = {
+  fields: null,
+  players: null,
+};
+
+GameBoard.propTypes = {
+  fields: PropTypes.arrayOf(PropTypes.shape({
+    cost: PropTypes.number,
+    fine: PropTypes.number,
+    icon: PropTypes.string,
+    payment: PropTypes.number,
+    subtitle: PropTypes.string,
+    title: PropTypes.string,
+    children: PropTypes.node,
+  })),
+  players: PropTypes.arrayOf(PropTypes.shape({
+    //
+  })),
+};
 
 export default GameBoard;
