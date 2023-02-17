@@ -8,6 +8,9 @@ const PLAYER_DATA = {
   eventId: null,
   name: null,
   userId: null,
+  //
+  money: 60000,
+  position: '1',
 };
 
 export const addNewPlayer = withGame((context, data) => {
