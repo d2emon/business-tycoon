@@ -1,8 +1,15 @@
-import withGame from './withGame';
+import database from '../database';
+import userAPI from '../userAPI';
+import withGame, { playersCollectionId } from './withGame';
+
+(async () => {
+  await database.addCollection(playersCollectionId);
+})();
 
 const DEFAULT_CHANNEL = 1;
 
-const PLAYER_DATA = {
+const Player = (values) => ({
+  gameId: null,
   id: null,
   channelId: DEFAULT_CHANNEL,
   eventId: null,
@@ -11,43 +18,69 @@ const PLAYER_DATA = {
   //
   money: 60000,
   position: '1',
-};
+  //
+  ...values,
+});
 
-export const addNewPlayer = withGame((context, data) => {
+const findByName = (collection, name) => collection
+  .query()
+  .find((player) => (player && (player.name.toLowerCase() === name)))
+  .any();
+
+export const addNewPlayer = withGame(async (context, data) => {
   const {
-    findPlayerByName,
-    getPlayerId,
-    updatePlayer,
+    playersCollection,
   } = context;
   const {
-    user,
+    gameId,
+    userId,
   } = data;
 
-  const found = findPlayerByName(user.name);
+  const user = await userAPI.getUser({
+    userId,
+  });
+  if (!user) {
+    throw new Error('Пользователь не найден!');
+  }
+
+  // eslint-disable-next-line no-console
+  console.log(`ENTERING GAME: ${user.name}[${user.id}]`);
+
+  const found = await findByName(playersCollection, user.name);
   if (found) {
     throw new Error('Пользователь с таким именем уже находится в игре');
   }
 
-  const playerId = getPlayerId();
-  if (!playerId) {
+  const id = playersCollection.getEmpty();
+  if (!id) {
     throw new Error('На данный момент свободные места отсутствуют');
   }
 
   // TODO: Set random channel id
-  return updatePlayer(playerId, {
-    ...PLAYER_DATA,
+  const player = await playersCollection.update(id, Player({
+    id,
+    gameId,
     userId: user.id,
     name: user.name,
-  });
+  }));
+
+  return player;
 });
 
-export const findPlayer = withGame((context, data) => {
+export const findPlayerByName = withGame(async (context, data) => {
   const {
-    findPlayerByName,
+    playersCollection,
   } = context;
-  const {
-    name,
-  } = data;
 
-  return findPlayerByName(name);
+  return findByName(playersCollection, data.name);
+});
+
+export const getPlayers = withGame(async (context) => {
+  const {
+    playersCollection,
+  } = context;
+
+  return playersCollection
+    .query()
+    .all();
 });

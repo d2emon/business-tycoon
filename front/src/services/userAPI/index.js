@@ -1,31 +1,23 @@
+import database from '../database';
 import { mockResponse } from '../utils';
+import usersData, { collectionId } from './data';
 
-const USERS = {};
-
-const USER_DATA = {
-  id: null,
-  name: null,
-};
+(async () => {
+  const collection = await database.addCollection(collectionId);
+  collection.fill(usersData);
+})();
 
 const withUser = (callback) => async (data) => {
   const {
     userId,
   } = data;
 
-  const user = userId ? USERS[userId] : null;
+  const collection = await database.getCollection(collectionId);
+  const user = await collection.getById(userId);
 
   const context = {
+    collection,
     user,
-    createUser: (userData) => {
-      const id = USERS.length;
-      const newUser = {
-        ...USER_DATA,
-        ...userData,
-        id,
-      };
-      USERS[id] = newUser;
-      return newUser;
-    },
   };
 
   return callback(context, data);
@@ -33,24 +25,20 @@ const withUser = (callback) => async (data) => {
 
 const addUser = withUser((context, data) => {
   const {
+    collection,
     user,
-    createUser,
   } = context;
-
-  const {
-    name,
-  } = data;
 
   if (user) {
     throw new Error('Пользователь уже существует!');
   }
 
-  return createUser({
-    name,
+  return collection.addUser({
+    name: data.name,
   });
 });
 
-const getUser = withUser(async (context) => {
+const getUser = withUser((context) => {
   const {
     user,
   } = context;
@@ -63,8 +51,8 @@ const getUser = withUser(async (context) => {
 });
 
 const userAPI = {
-  addUser: mockResponse(addUser),
-  getUser: mockResponse(getUser),
+  addUser: mockResponse('POST users/', addUser),
+  getUser: mockResponse('GET users/', getUser),
 };
 
 export default userAPI;

@@ -1,8 +1,4 @@
 import {
-  enumerate,
-  makeIndices,
-} from '../../utils';
-import {
   bank,
   casino,
   company,
@@ -10,7 +6,9 @@ import {
 } from './fieldTypes';
 import * as icons from './icons';
 
-const FIELDS = makeIndices(enumerate([
+export const collectionId = 'fields';
+
+const data = [
   // 1-11
   bank(1000),
   company('Руссо-Балтъ', 9000, icons.ICON_AUTO),
@@ -68,6 +66,6 @@ const FIELDS = makeIndices(enumerate([
   company('Бѣнтли', 10000, icons.ICON_AUTO),
   company('Чай', 7000, icons.ICON_FOOD, 26),
   company('Тула', 4000, icons.ICON_GUN),
-]));
+];
 
-export default FIELDS;
+export default data;

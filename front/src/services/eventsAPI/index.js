@@ -50,7 +50,7 @@ const eventEnterGame = sendAll((data) => {
 });
 
 const eventsAPI = {
-  eventEnterGame: mockResponse(eventEnterGame),
+  eventEnterGame: mockResponse('POST event/enterGame/', eventEnterGame),
 };
 
 export default eventsAPI;

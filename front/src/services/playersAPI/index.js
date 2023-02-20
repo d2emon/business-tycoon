@@ -1,9 +1,13 @@
+import database from '../database';
 import eventsAPI from '../eventsAPI';
 import gameAPI from '../gameAPI';
-import userAPI from '../userAPI';
 import { mockResponse } from '../utils';
 
-let PLAYERS = [];
+const collectionId = 'players';
+
+(async () => {
+  await database.addCollection(collectionId);
+})();
 
 // TODO: Error Handler
 // TODO: Exit Handler
@@ -16,17 +20,14 @@ const addPlayer = async (data) => {
     userId,
   } = data;
 
-  const user = await userAPI.getUser({ userId });
-  if (!user) {
-    throw new Error('Пользователь не найден!');
-  }
-
-  console.log(`ENTERING GAME: ${user.name}[${user.id}]`);
-
   const player = await gameAPI.addNewPlayer({
     gameId,
-    user,
+    userId,
   });
+
+  if (!player) {
+    return player;
+  }
 
   eventsAPI.eventEnterGame({
     gameId,
@@ -37,23 +38,23 @@ const addPlayer = async (data) => {
   // TODO: Return channel data
   // TODO: Return mode 1
   // TODO: Return player is ready
-  return {
-    player,
-  };
-};
 
-const startGame = (players) => {
-  PLAYERS = players.map((player) => ({
-    ...player,
-    money: 60000,
-    position: '1',
-  }));
-  return [...PLAYERS];
+  return player;
 };
 
 const playersAPI = {
-  addPlayer: mockResponse(addPlayer),
-  startGame: mockResponse(startGame),
+  addPlayer: mockResponse('POST /players/', addPlayer),
+  getPlayers: mockResponse('GET /players/', gameAPI.getPlayers),
 };
+
+(() => {
+  const players = [
+    { gameId: '1', userId: '1' },
+    { gameId: '1', userId: '2' },
+    { gameId: '1', userId: '3' },
+    { gameId: '1', userId: '4' },
+  ];
+  players.forEach(playersAPI.addPlayer);
+})();
 
 export default playersAPI;

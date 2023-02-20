@@ -1,10 +1,12 @@
-import {
-  makeIndices,
-} from '../utils';
+import database from '../database';
+
+export const collectionId = 'games';
+export const eventsCollectionId = 'events';
+export const playersCollectionId = 'players';
 
 const MAX_PLAYERS = 16;
 
-const createGame = (id) => {
+const Game = (values) => {
   const players = {};
 
   for (let playerId = 0; playerId <= MAX_PLAYERS; playerId += 1) {
@@ -12,83 +14,50 @@ const createGame = (id) => {
   }
 
   return {
-    id,
+    id: null,
     lastUpdate: 0,
     events: [],
     players,
+    ...values,
   };
 };
 
-const GAMES = makeIndices([
-  createGame('1'),
-  createGame('2'),
-  createGame('3'),
-]);
+(async () => {
+  const collection = await database.addCollection(playersCollectionId);
+  await collection.addItem(Game({
+    id: '1',
+  }));
+})();
 
-const withEvents = (game) => {
-  const {
-    id,
-    events,
-  } = game;
-
-  return {
-    events,
-    getEventId: () => events.reduce(
-      (lastEventId, event) => ((event.id > lastEventId) ? event.id : lastEventId),
-      0,
-    ),
-    appendEvent: (event, onUpdate) => {
-      game.events.push(event);
-      if ((game.events.length - game.lastUpdate) > 100) {
-        GAMES[id].lastUpdate = game.events.length;
-        onUpdate();
-      }
-    },
-  };
-};
-
-const withPlayers = (game) => {
-  const {
-    id,
-    players,
-  } = game;
-
-  return {
-    players,
-    getPlayerId: () => Object
-      .keys(players)
-      .find((itemId) => (!players[itemId])),
-    findPlayerByName: (name) => Object
-      .values(players)
-      .find((player) => (player && (player.name.toLowerCase() === name))),
-    updatePlayer: (playerId, update) => {
-      const oldData = GAMES[id].players[playerId] || {};
-      const player = {
-        id,
-        ...oldData,
-        ...update,
-      };
-      GAMES[id].players[playerId] = player;
-      return player;
-    },
-  };
-};
-
-const withGame = (callback) => (data) => {
+const withGame = (callback) => async (data) => {
   const {
     gameId,
   } = data;
 
-  const game = GAMES[gameId];
-
+  const collection = await database.getCollection(collectionId);
+  const game = await collection.getById(gameId);
   if (!game) {
     throw new Error('Game not found');
   }
 
+  const eventsCollection = await database.getCollection(eventsCollectionId);
+  const playersCollection = await database.getCollection(playersCollectionId);
+
+  const getLastUpdate = async () => {
+    const g = await collection.getById(gameId);
+    return g && g.lastUpdate;
+  };
+
+  const setLastUpdate = async (lastUpdate) => collection.update(gameId, {
+    lastUpdate,
+  });
+
   const context = {
     game,
-    ...withEvents(game),
-    ...withPlayers(game),
+    eventsCollection,
+    playersCollection,
+    getLastUpdate,
+    setLastUpdate,
   };
   return callback(context, data);
 };
