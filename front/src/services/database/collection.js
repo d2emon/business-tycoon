@@ -1,7 +1,13 @@
 import DataQuery from './dataQuery';
 
-const Collection = (collectionId) => {
-  let DATA = {};
+export const Subcollection = (initialData = []) => {
+  let DATA = initialData.reduce(
+    (data, item) => ({
+      ...data,
+      [item.id]: item,
+    }),
+    {},
+  );
   let lastId = 0;
 
   const addItem = (values) => new Promise((resolve) => {
@@ -44,16 +50,16 @@ const Collection = (collectionId) => {
   const query = () => DataQuery(Object.values(DATA));
 
   const update = (id, values) => new Promise((resolve) => {
-    const player = {
+    const item = {
       ...DATA[id],
       ...values,
     };
-    DATA[id] = player;
-    resolve(player);
+    DATA[id] = item;
+    resolve(item);
   });
 
   return {
-    id: collectionId,
+    DATA,
     addItem,
     empty,
     fill,
@@ -61,6 +67,15 @@ const Collection = (collectionId) => {
     query,
     getEmpty,
     update,
+  };
+};
+
+const Collection = (collectionId) => {
+  const collection = Subcollection();
+
+  return {
+    ...collection,
+    id: collectionId,
   };
 };
 

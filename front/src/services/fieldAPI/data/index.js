@@ -66,6 +66,9 @@ const data = [
   company('Бѣнтли', 10000, icons.ICON_AUTO),
   company('Чай', 7000, icons.ICON_FOOD, 26),
   company('Тула', 4000, icons.ICON_GUN),
-];
+].map((values, id) => ({
+  position: id,
+  ...values,
+}));
 
 export default data;

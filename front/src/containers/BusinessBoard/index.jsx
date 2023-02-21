@@ -3,76 +3,104 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import {
+  Button,
+  Card,
+  Col,
+  Container,
+  Row,
+} from 'react-bootstrap';
 import GameBoard from '../../components/GameBoard';
 import fieldAPI from '../../services/fieldAPI';
-import playersAPI from '../../services/playersAPI';
+import gameAPI from '../../services/gameAPI';
 
 function BusinessBoard() {
+  const gameId = '1';
+  const userId = '1';
+
   const [fields, setFields] = useState([]);
   const [players, setPlayers] = useState([]);
 
-  const startGame = useCallback(
+  const loadFieldData = useCallback(
     async () => {
-      const gameId = '1';
-      /*
-      const users = [
-        '1',
-        '2',
-        '3',
-        '4',
-      ];
+      const response = await fieldAPI.getFields();
+      setFields(response);
+    },
+    [],
+  );
 
-      const playersData = await Promise.all(users.map((userId) => playersAPI.addPlayer({
-        gameId,
-        userId,
-      })));
-      setPlayers(playersData);
-      */
-      const playersData = await playersAPI.getPlayers({
+  const loadPlayersData = useCallback(
+    async () => {
+      const playersData = await gameAPI.getPlayers({
         gameId,
       });
       setPlayers(playersData);
     },
-    [],
+    [gameId],
   );
 
-  const loadFieldData = async () => {
-    const response = await fieldAPI.getFields();
-    setFields(response);
-  };
-
-  const loadPlayersData = async () => {
-    /*
-    const gameId = '1';
-    const users = [
-      '1',
-      '2',
-      '3',
-      '4',
-    ];
-
-    const playersData = await Promise.all(users.map((userId) => playersAPI.addPlayer({
-      gameId,
-      userId,
-    })));
-    setPlayers(playersData);
-    */
-  };
-
-  useEffect(
+  const refreshData = useCallback(
     () => {
-      startGame();
       loadFieldData();
       loadPlayersData();
     },
-    [],
+    [
+      loadFieldData,
+      loadPlayersData,
+    ],
+  );
+
+  const startGame = useCallback(
+    async () => {
+      await gameAPI.addPlayer({
+        gameId,
+        userId,
+      });
+      refreshData();
+    },
+    [
+      gameId,
+      userId,
+      refreshData,
+    ],
+  );
+
+  useEffect(
+    () => {
+      refreshData();
+    },
+    [refreshData],
   );
 
   return (
-    <GameBoard
-      fields={fields}
-      players={players}
-    />
+    <Container>
+      <Row>
+        <Col md="2">
+          <Card>
+            <Card.Body className="d-grid gap-2">
+              <Button
+                variant="primary"
+                onClick={startGame}
+              >
+                Начать игру
+              </Button>
+              <Button
+                variant="primary"
+                onClick={refreshData}
+              >
+                Обновить
+              </Button>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col>
+          <GameBoard
+            fields={fields}
+            players={players}
+          />
+        </Col>
+      </Row>
+    </Container>
   );
 }
 

@@ -24,7 +24,7 @@ function GameBoard(props) {
   const fieldsData = useMemo(
     () => fields.map((field) => ({
       ...field,
-      players: players.filter((player) => (player.position === field.id)),
+      players: players.filter((player) => (player.position === field.position)),
     })),
     [
       fields,
@@ -82,10 +82,12 @@ GameBoard.defaultProps = {
 
 GameBoard.propTypes = {
   fields: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string,
     cost: PropTypes.number,
     fine: PropTypes.number,
     icon: PropTypes.string,
     payment: PropTypes.number,
+    position: PropTypes.number,
     subtitle: PropTypes.string,
     title: PropTypes.string,
     children: PropTypes.node,

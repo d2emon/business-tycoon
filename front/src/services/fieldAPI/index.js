@@ -15,7 +15,7 @@ const getFields = async () => {
 };
 
 const fieldAPI = {
-  getFields: mockResponse('GET fields/', getFields),
+  getFields: mockResponse('GET /fields/', getFields),
 };
 
 export default fieldAPI;

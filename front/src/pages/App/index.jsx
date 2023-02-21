@@ -11,7 +11,9 @@ function App() {
   return (
     <Container className="App">
       <Card>
-        <BusinessBoard />
+        <Card.Body>
+          <BusinessBoard />
+        </Card.Body>
       </Card>
     </Container>
   );

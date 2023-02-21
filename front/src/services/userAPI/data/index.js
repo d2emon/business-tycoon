@@ -5,10 +5,10 @@ const User = (name) => ({
 });
 
 const data = [
-  User('Игрок 1'),
-  User('Игрок 2'),
-  User('Игрок 3'),
-  User('Игрок 4'),
+  User('Игрок'),
+  User('Бот 1'),
+  User('Бот 2'),
+  User('Бот 3'),
 ];
 
 export default data;

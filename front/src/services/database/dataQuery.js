@@ -20,6 +20,12 @@ const DataQuery = (data) => {
         500,
       );
     }),
+    first: () => new Promise((resolve) => {
+      setTimeout(
+        () => resolve((DATA.length > 0) ? DATA[0] : null),
+        500,
+      );
+    }),
     find: (query) => DataQuery(DATA.filter(query)),
     sort: (query) => DataQuery(DATA.sort(query)),
   };

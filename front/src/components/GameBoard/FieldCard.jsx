@@ -16,7 +16,7 @@ function FieldCard(props) {
 
   return (
     <Card
-      className="my-2 field-card"
+      className="mb-2 field-card"
     >
       <Card.Header>
         <Card.Title>
@@ -35,7 +35,7 @@ function FieldCard(props) {
         <Container>
           { players.map((player) => (
             <PlayerToken
-              key={player.name}
+              key={player.id}
               name={player.name}
             />
           ))}
@@ -54,6 +54,7 @@ FieldCard.defaultProps = {
 
 FieldCard.propTypes = {
   players: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string,
     name: PropTypes.string,
   })),
   subtitle: PropTypes.string,

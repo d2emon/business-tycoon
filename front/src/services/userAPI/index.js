@@ -51,8 +51,8 @@ const getUser = withUser((context) => {
 });
 
 const userAPI = {
-  addUser: mockResponse('POST users/', addUser),
-  getUser: mockResponse('GET users/', getUser),
+  addUser: mockResponse('POST /users/', addUser),
+  getUser: mockResponse('GET /users/', getUser),
 };
 
 export default userAPI;

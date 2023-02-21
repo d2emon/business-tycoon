@@ -1,33 +1,6 @@
 import database from '../database';
 
 export const collectionId = 'games';
-export const eventsCollectionId = 'events';
-export const playersCollectionId = 'players';
-
-const MAX_PLAYERS = 16;
-
-const Game = (values) => {
-  const players = {};
-
-  for (let playerId = 0; playerId <= MAX_PLAYERS; playerId += 1) {
-    players[playerId] = null;
-  }
-
-  return {
-    id: null,
-    lastUpdate: 0,
-    events: [],
-    players,
-    ...values,
-  };
-};
-
-(async () => {
-  const collection = await database.addCollection(playersCollectionId);
-  await collection.addItem(Game({
-    id: '1',
-  }));
-})();
 
 const withGame = (callback) => async (data) => {
   const {
@@ -40,26 +13,32 @@ const withGame = (callback) => async (data) => {
     throw new Error('Game not found');
   }
 
-  const eventsCollection = await database.getCollection(eventsCollectionId);
-  const playersCollection = await database.getCollection(playersCollectionId);
-
-  const getLastUpdate = async () => {
-    const g = await collection.getById(gameId);
-    return g && g.lastUpdate;
-  };
-
-  const setLastUpdate = async (lastUpdate) => collection.update(gameId, {
-    lastUpdate,
-  });
-
   const context = {
+    collection,
     game,
-    eventsCollection,
-    playersCollection,
-    getLastUpdate,
-    setLastUpdate,
   };
+
   return callback(context, data);
 };
+
+export const update = withGame(async (context, data) => {
+  const {
+    collection,
+    game,
+  } = context;
+  const {
+    timestamp,
+  } = data;
+
+  const needUpdate = ((timestamp - game.lastUpdate) > 100);
+
+  if (needUpdate) {
+    collection.update(game.id, {
+      lastUpdate: timestamp,
+    });
+  }
+
+  return needUpdate;
+});
 
 export default withGame;

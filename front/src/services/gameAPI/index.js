@@ -2,55 +2,94 @@ import database from '../database';
 import {
   mockResponse,
 } from '../utils';
+import gamesData, { collectionId } from './data';
 import {
   createEvent,
   getEvents,
 } from './events';
+import Game from './models';
 import {
-  addNewPlayer, getPlayers,
+  addNewPlayer,
+  getPlayers,
 } from './players';
+import senders from './events/senders';
+import {
+  update,
+} from './withGame';
 
-export const collectionId = 'games';
+const addEvent = async (data) => {
+  const event = await createEvent(data);
 
-const MAX_PLAYERS = 16;
-
-const Game = (values) => {
-  const players = {};
-
-  for (let playerId = 0; playerId <= MAX_PLAYERS; playerId += 1) {
-    players[playerId] = null;
+  const updated = await update({
+    ...data,
+    timestamp: event.timestamp,
+  });
+  if (updated) {
+    // TODO: Cleanup events
+    // TODO: Perform onUpdate events
   }
 
   return {
-    id: null,
-    lastUpdate: 0,
-    events: [],
-    players,
-    ...values,
+    event,
+    updated,
   };
+};
+
+const addPlayer = async (data) => {
+  const player = await addNewPlayer(data);
+
+  if (!player) {
+    return null;
+  }
+
+  senders
+    .eventEnterGame(player)
+    .forEach((event) => addEvent({
+      ...data,
+      event,
+    }));
+
+  // TODO: Perform player checks
+  // TODO: Return channel data
+  // TODO: Return mode 1
+  // TODO: Return player is ready
+
+  return player;
+};
+
+const gameAPI = {
+  // Events
+  addEvent: mockResponse('POST /game/events/', addEvent),
+  getEvents: mockResponse('GET /game/events/', getEvents),
+
+  // Players
+  addPlayer: mockResponse('POST /game/players/', addPlayer),
+  getPlayers: mockResponse('GET /game/players/', getPlayers),
 };
 
 (async () => {
   const collection = await database.addCollection(collectionId);
-  await collection.addItem(Game({
-    id: '1',
-  }));
+
+  const initGame = async (value) => {
+    const game = Game(value);
+    await game.initialize();
+    await collection.addItem(game);
+
+    await addPlayer({
+      gameId: game.id,
+      userId: '2',
+    });
+    await addPlayer({
+      gameId: game.id,
+      userId: '3',
+    });
+    await addPlayer({
+      gameId: game.id,
+      userId: '4',
+    });
+  };
+
+  await Promise.all(gamesData.map(initGame));
 })();
-
-const gameAPI = {
-  // Events
-  createEvent: mockResponse('POST /game/events/', (data) => createEvent({
-    ...data,
-    onUpdate: () => {
-      // TODO: Cleanup events
-      // TODO: Perform onUpdate events
-    },
-  })),
-  getEvents: mockResponse('GET /game/events/', getEvents),
-
-  // Players
-  addNewPlayer: mockResponse('POST /game/players/', addNewPlayer),
-  getPlayers: mockResponse('GET /game/players/', getPlayers),
-};
 
 export default gameAPI;
