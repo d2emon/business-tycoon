@@ -13,6 +13,7 @@ export const Player = (values) => ({
   //
   money: 60000,
   position: 0,
+  roll: null,
   //
   ...values,
 });

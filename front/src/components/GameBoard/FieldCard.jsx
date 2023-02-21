@@ -36,7 +36,9 @@ function FieldCard(props) {
           { players.map((player) => (
             <PlayerToken
               key={player.id}
+              money={player.money}
               name={player.name}
+              roll={player.roll}
             />
           ))}
         </Container>
@@ -55,7 +57,9 @@ FieldCard.defaultProps = {
 FieldCard.propTypes = {
   players: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string,
+    money: PropTypes.number,
     name: PropTypes.string,
+    roll: PropTypes.number,
   })),
   subtitle: PropTypes.string,
   title: PropTypes.string,

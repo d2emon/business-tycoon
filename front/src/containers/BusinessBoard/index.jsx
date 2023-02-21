@@ -1,6 +1,7 @@
 import React, {
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import {
@@ -11,6 +12,7 @@ import {
   Row,
 } from 'react-bootstrap';
 import GameBoard from '../../components/GameBoard';
+import PlayerToken from '../../components/PlayerToken';
 import fieldAPI from '../../services/fieldAPI';
 import gameAPI from '../../services/gameAPI';
 
@@ -21,8 +23,10 @@ function BusinessBoard() {
   const [isReady, setIsReady] = useState(false);
 
   const [fields, setFields] = useState([]);
+  const [player, setPlayer] = useState(null);
   const [players, setPlayers] = useState([]);
-  const [playerId, setPlayerId] = useState([]);
+
+  const playerId = useMemo(() => (player && player.id), [player]);
 
   const loadFieldData = useCallback(
     async () => {
@@ -57,11 +61,11 @@ function BusinessBoard() {
 
   const startGame = useCallback(
     async () => {
-      const player = await gameAPI.addPlayer({
+      const result = await gameAPI.addPlayer({
         gameId,
         userId,
       });
-      setPlayerId(player.id);
+      setPlayer(result);
 
       await refreshData();
       setIsReady(true);
@@ -76,11 +80,11 @@ function BusinessBoard() {
   const startTurn = useCallback(
     async () => {
       setIsReady(false);
-      const player = await gameAPI.startTurn({
+      const result = await gameAPI.startTurn({
         gameId,
         playerId,
       });
-      console.log(player);
+      setPlayer(result);
 
       await refreshData();
       setIsReady(true);
@@ -104,6 +108,16 @@ function BusinessBoard() {
     <Container>
       <Row>
         <Col md="2">
+          { player && (
+            <PlayerToken
+              controls
+              disabled={!isReady}
+              money={player.money}
+              name={player.name}
+              roll={player.roll}
+              onNextTurn={startTurn}
+            />
+          ) }
           <Card>
             <Card.Body className="d-grid gap-2">
               <Button
@@ -117,13 +131,6 @@ function BusinessBoard() {
                 onClick={refreshData}
               >
                 Обновить
-              </Button>
-              <Button
-                disabled={!isReady}
-                variant="primary"
-                onClick={startTurn}
-              >
-                Сделать ход
               </Button>
             </Card.Body>
           </Card>
