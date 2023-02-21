@@ -10,6 +10,7 @@ const Game = (values) => {
 
   return {
     id: null,
+    isReady: false,
     lastUpdate: 0,
     events: Events([]),
     players,

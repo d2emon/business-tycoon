@@ -10,6 +10,7 @@ import {
   Col,
   Container,
   Row,
+  Spinner,
 } from 'react-bootstrap';
 import GameBoard from '../../components/GameBoard';
 import PlayerToken from '../../components/PlayerToken';
@@ -21,6 +22,7 @@ function BusinessBoard() {
   const userId = '1';
 
   const [isReady, setIsReady] = useState(false);
+  const [gameIsReady, setGameIsReady] = useState(false);
 
   const [fields, setFields] = useState([]);
   const [player, setPlayer] = useState(null);
@@ -36,26 +38,22 @@ function BusinessBoard() {
     [],
   );
 
-  const loadPlayersData = useCallback(
-    async () => {
-      const playersData = await gameAPI.getPlayers({
-        gameId,
-      });
-      setPlayers(playersData);
-    },
-    [gameId],
-  );
-
   const refreshData = useCallback(
     async () => {
+      const game = await gameAPI.getGame({
+        gameId,
+      });
+
+      setGameIsReady(game.isReady);
+      setPlayers(game.players);
+
       await Promise.all([
         loadFieldData(),
-        loadPlayersData(),
       ]);
     },
     [
+      gameId,
       loadFieldData,
-      loadPlayersData,
     ],
   );
 
@@ -67,13 +65,11 @@ function BusinessBoard() {
       });
       setPlayer(result);
 
-      await refreshData();
       setIsReady(true);
     },
     [
       gameId,
       userId,
-      refreshData,
     ],
   );
 
@@ -86,13 +82,11 @@ function BusinessBoard() {
       });
       setPlayer(result);
 
-      await refreshData();
       setIsReady(true);
     },
     [
       gameId,
       playerId,
-      refreshData,
     ],
   );
 
@@ -100,6 +94,16 @@ function BusinessBoard() {
     () => {
       setIsReady(false);
       refreshData();
+    },
+    [refreshData],
+  );
+
+  useEffect(
+    () => {
+      setInterval(
+        refreshData,
+        5000,
+      );
     },
     [refreshData],
   );
@@ -121,10 +125,15 @@ function BusinessBoard() {
           <Card>
             <Card.Body className="d-grid gap-2">
               <Button
+                disabled={!gameIsReady}
                 variant="primary"
                 onClick={startGame}
               >
-                Начать игру
+                {
+                  gameIsReady
+                    ? 'Начать игру'
+                    : <Spinner animation="border" />
+                }
               </Button>
               <Button
                 variant="primary"

@@ -14,7 +14,7 @@ import {
   startTurn,
 } from './players';
 import senders from './events/senders';
-import {
+import withGame, {
   update,
 } from './withGame';
 
@@ -58,7 +58,32 @@ const addPlayer = async (data) => {
   return player;
 };
 
+const getGame = withGame(async (context) => {
+  const {
+    game: {
+      id,
+      isReady,
+      lastUpdate,
+      events,
+      players,
+    },
+  } = context;
+
+  const eventsList = await events.query().all();
+  const playersList = await players.getActive().all();
+
+  return {
+    id,
+    isReady,
+    lastUpdate,
+    events: eventsList,
+    players: playersList,
+  };
+});
+
 const gameAPI = {
+  getGame: mockResponse('GET /game/', getGame),
+
   // Events
   addEvent: mockResponse('POST /game/events/', addEvent),
   getEvents: mockResponse('GET /game/events/', getEvents),
@@ -90,6 +115,15 @@ const gameAPI = {
       gameId: game.id,
       userId: '4',
     });
+
+    setTimeout(
+      () => {
+        collection.update(game.id, {
+          isReady: true,
+        });
+      },
+      1000,
+    );
   };
 
   await Promise.all(gamesData.map(initGame));
