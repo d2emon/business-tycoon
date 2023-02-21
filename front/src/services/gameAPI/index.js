@@ -11,6 +11,7 @@ import Game from './models';
 import {
   addNewPlayer,
   getPlayers,
+  startTurn,
 } from './players';
 import senders from './events/senders';
 import {
@@ -65,6 +66,8 @@ const gameAPI = {
   // Players
   addPlayer: mockResponse('POST /game/players/', addPlayer),
   getPlayers: mockResponse('GET /game/players/', getPlayers),
+
+  startTurn: mockResponse('POST /game/turn/', startTurn),
 };
 
 (async () => {

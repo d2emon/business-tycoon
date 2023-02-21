@@ -18,8 +18,11 @@ function BusinessBoard() {
   const gameId = '1';
   const userId = '1';
 
+  const [isReady, setIsReady] = useState(false);
+
   const [fields, setFields] = useState([]);
   const [players, setPlayers] = useState([]);
+  const [playerId, setPlayerId] = useState([]);
 
   const loadFieldData = useCallback(
     async () => {
@@ -40,9 +43,11 @@ function BusinessBoard() {
   );
 
   const refreshData = useCallback(
-    () => {
-      loadFieldData();
-      loadPlayersData();
+    async () => {
+      await Promise.all([
+        loadFieldData(),
+        loadPlayersData(),
+      ]);
     },
     [
       loadFieldData,
@@ -52,11 +57,14 @@ function BusinessBoard() {
 
   const startGame = useCallback(
     async () => {
-      await gameAPI.addPlayer({
+      const player = await gameAPI.addPlayer({
         gameId,
         userId,
       });
-      refreshData();
+      setPlayerId(player.id);
+
+      await refreshData();
+      setIsReady(true);
     },
     [
       gameId,
@@ -65,8 +73,28 @@ function BusinessBoard() {
     ],
   );
 
+  const startTurn = useCallback(
+    async () => {
+      setIsReady(false);
+      const player = await gameAPI.startTurn({
+        gameId,
+        playerId,
+      });
+      console.log(player);
+
+      await refreshData();
+      setIsReady(true);
+    },
+    [
+      gameId,
+      playerId,
+      refreshData,
+    ],
+  );
+
   useEffect(
     () => {
+      setIsReady(false);
       refreshData();
     },
     [refreshData],
@@ -89,6 +117,13 @@ function BusinessBoard() {
                 onClick={refreshData}
               >
                 Обновить
+              </Button>
+              <Button
+                disabled={!isReady}
+                variant="primary"
+                onClick={startTurn}
+              >
+                Сделать ход
               </Button>
             </Card.Body>
           </Card>

@@ -10,7 +10,7 @@ const withGame = (callback) => async (data) => {
   const collection = await database.getCollection(collectionId);
   const game = await collection.getById(gameId);
   if (!game) {
-    throw new Error('Game not found');
+    throw new Error('Игра не найдена');
   }
 
   const context = {
